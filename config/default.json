@@ -1,0 +1,5 @@
+{
+  "serverPort" : 3001,
+  "dbUrl": "mongodb+srv://Kenan:K2VRRTZFQ5QJ@cluster0.lgrbc.mongodb.net/example?retryWrites=true&w=majority",
+  "secretKey": "adilet-api"
+}
