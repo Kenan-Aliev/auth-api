@@ -5,12 +5,12 @@ const jwt = require('jsonwebtoken')
 const config = require('config')
 const {check , validationResult} = require('express-validator')
 const User = require('../models/userModel')
-
+const authMiddleware = require('../middlewares/auth.middleware')
 router.post('/registration',
     [
         check('email','Uncorrect email').isEmail(),
         check('username','Uncorrect username').isString().isLength({min:3,max:10}),
-        check('phone','Uncorrect phone').isNumeric().isLength({min:3,max:15}),
+        check('phone','Uncorrect phone').isString().isLength({min:3,max:15}),
         check('password', 'Password must be longer than 3 and shorter than 12').isLength({min:3, max:12})
     ],
     async (req,res)=>{
@@ -81,5 +81,44 @@ const token = jwt.sign({id:findUser._id}, config.get('secretKey'), {expiresIn: "
 }
 })
 
+
+
+router.get('/auth',authMiddleware,
+    async (req,res)=>{
+try{
+    const findUser = await User.findOne({_id:req.user.id})
+    console.log(findUser)
+    const token = jwt.sign({id:findUser._id},config.get('secretKey'),{expiresIn: '1h'})
+    return res.json({
+        token,
+        user:{
+            id:findUser._id,
+            email:findUser.email,
+            username:findUser.username,
+            phone:findUser.phone
+        }
+    })
+
+}catch(error){
+    return res.json({message:'Server error',error})
+        }
+    })
+
+
+router.delete('/deleteUser',authMiddleware,
+    async (req,res)=>{
+    try{
+        const findUser= await User.findOne({_id:req.user.id})
+        console.log(findUser)
+        if(!findUser){
+            return res.status(400).json({message:'User not found'})
+        }
+        await User.deleteOne({_id:req.user.id})
+        return res.json({message:'User was deleted'})
+    }
+    catch(error){
+        return res.json({message:'Server error',error})
+    }
+    })
 
 module.exports = router
