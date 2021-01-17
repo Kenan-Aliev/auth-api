@@ -9,7 +9,8 @@ const User = require('../models/userModel')
 router.post('/registration',
     [
         check('email','Uncorrect email').isEmail(),
-        check('username','Uncorrect username').notEmpty().isString().isLength({min:3,max:10}),
+        check('username','Uncorrect username').isString().isLength({min:3,max:10}),
+        check('phone','Uncorrect phone').isNumeric().isLength({min:3,max:15}),
         check('password', 'Password must be longer than 3 and shorter than 12').isLength({min:3, max:12})
     ],
     async (req,res)=>{
@@ -18,8 +19,7 @@ router.post('/registration',
         if(!errors.isEmpty()){
             return res.status(400).json({message:'Uncorrect request',errors})
         }
-        const {email , username , password} = req.body
-        const hashPassword = await bcrypt.hash(password,8)
+        const {email , username ,phone, password} = req.body
         User.findOne({
             $or: [{
                 email
@@ -30,15 +30,17 @@ router.post('/registration',
             if (user) {
                 let errors = {};
                 if (user.email === email) {
-                    errors.username = "Email already exists";
+                    errors.email = "Email already exists";
                 } else {
-                    errors.email = "User Name already exists";
+                    errors.username = "User Name already exists";
                 }
                 return res.status(400).json(errors);
             } else {
+                const hashPassword = await bcrypt.hash(password,8)
                 await new User({
-                    username,
                     email,
+                    username,
+                    phone,
                     password: hashPassword
                 }).save()
                 return res.json({message:'User was created'})
@@ -57,11 +59,11 @@ try{
     const {email,password} = req.body
     const findUser = await User.findOne({email})
     if(!findUser){
-        return res.json({message:'User not found'})
+        return res.status(400).json({message:'User not found'})
     }
     const checkPassword = bcrypt.compareSync(password,findUser.password)
     if(!checkPassword){
-        return res.json({message:'Password is not correct'})
+        return res.status(400).json({message:'Password is not correct'})
     }
 const token = jwt.sign({id:findUser._id}, config.get('secretKey'), {expiresIn: "1h"})
     return res.json({
@@ -69,7 +71,8 @@ const token = jwt.sign({id:findUser._id}, config.get('secretKey'), {expiresIn: "
         user:{
             id: findUser._id,
             email: findUser.email,
-            username: findUser.username
+            username: findUser.username,
+            phone:findUser.phone
         }
     })
 }catch(error){
