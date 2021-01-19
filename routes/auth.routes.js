@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 const config = require('config')
 const {check , validationResult} = require('express-validator')
 const User = require('../models/userModel')
+const ToDo = require('../models/todosModel')
 const authMiddleware = require('../middlewares/auth.middleware')
 router.post('/registration',
     [
@@ -37,11 +38,16 @@ router.post('/registration',
                 return res.status(400).json(errors);
             } else {
                 const hashPassword = await bcrypt.hash(password,8)
-                await new User({
+                const newUser = await new User({
                     email,
                     username,
                     phone,
                     password: hashPassword
+                }).save()
+                await new ToDo({
+                    title:'Example title',
+                    description:'Example description',
+                    user:newUser._id
                 }).save()
                 return res.json({message:'User was created'})
             }
