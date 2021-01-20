@@ -93,7 +93,6 @@ router.get('/auth',authMiddleware,
     async (req,res)=>{
 try{
     const findUser = await User.findOne({_id:req.user.id})
-    console.log(findUser)
     const token = jwt.sign({id:findUser._id},config.get('secretKey'),{expiresIn: '1h'})
     return res.json({
         token,
@@ -114,12 +113,7 @@ try{
 router.delete('/deleteUser',authMiddleware,
     async (req,res)=>{
     try{
-        const findUser= await User.findOne({_id:req.user.id})
-        console.log(findUser)
-        if(!findUser){
-            return res.status(400).json({message:'User not found'})
-        }
-        await User.deleteOne({_id:req.user.id})
+        await User.findOneAndDelete({_id:req.user.id})
         return res.json({message:'User was deleted'})
     }
     catch(error){
