@@ -36,7 +36,7 @@ router.get('/get',authMiddleware,
     async (req,res)=>{
     try{
        const getToDos = await ToDo.find({user:req.user.id})
-        delete getToDos.splice(0,1)
+        getToDos.splice(0,1)
         return res.json(getToDos)
     }
     catch(e){
