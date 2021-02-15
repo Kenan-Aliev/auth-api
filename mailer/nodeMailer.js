@@ -8,7 +8,7 @@ module.exports = nodemailer.createTransport({
             user: 'mailertest48@mail.ru',
             pass: 'Nodemailer'
         }
-    },{
-        from:'Mailer Test <mailertest48@mail.ru>'
+    }, {
+        from: 'Mailer Test <mailertest48@mail.ru>'
     }
 );

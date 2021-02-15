@@ -1,7 +1,7 @@
-const {Schema,model} = require('mongoose')
+const {Schema, model} = require('mongoose')
 
 const citiesSchema = new Schema({
-    name:{type:String,required:true,unique:true}
+    name: {type: String, required: true, unique: true}
 })
 
-module.exports = model('cities',citiesSchema)
+module.exports = model('cities', citiesSchema)
