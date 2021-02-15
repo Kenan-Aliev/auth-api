@@ -4,13 +4,19 @@ const config = require('config')
 const authRouter = require('./routes/auth.routes')
 const corsMiddleware = require('./middlewares/cors.middleware')
 const PORT = config.get('serverPort')
-const todoRouter = require('./routes/todos.routes')
-
+const eventRouter = require('./routes/events.routes')
+const typeRouter = require('./routes/type.routes')
+const cityRouter = require("./routes/city.routes")
 const server = express()
+
+
 server.use(corsMiddleware)
 server.use(express.json())
 server.use('/api/auth',authRouter)
-server.use('/api/todos',todoRouter)
+server.use('/api/events',eventRouter)
+server.use('/api/types',typeRouter)
+server.use('/api/cities',cityRouter)
+
 const start = async () => {
     try {
         await mongoose.connect(config.get("dbUrl"), {

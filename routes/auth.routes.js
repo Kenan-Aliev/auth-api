@@ -5,22 +5,9 @@ const jwt = require('jsonwebtoken')
 const config = require('config')
 const {check , validationResult} = require('express-validator')
 const User = require('../models/userModel')
-const ToDo = require('../models/todosModel')
-const nodemailer = require('nodemailer')
 const authMiddleware = require('../middlewares/auth.middleware')
+const transporter = require('../mailer/nodeMailer')
 
-const transporter = nodemailer.createTransport({
-        host: 'smtp.mail.ru',
-        port: 465,
-        secure: true, // true for 465, false for other ports
-        auth: {
-            user: 'mailertest48@mail.ru',
-            pass: 'Nodemailer'
-        }
-    },{
-        from:'Mailer Test <mailertest48@mail.ru>'
-    }
-);
 
 
 router.post('/registration',
@@ -53,21 +40,26 @@ router.post('/registration',
                 }
                 return res.status(400).json(errors);
             } else {
-                const token = jwt.sign({email,username,phone,password},config.get('secretKey'),{expiresIn:'1h'})
-                const message = {
-                    from:'Mailer Test <mailertest48@mail.ru>',
-                    to:email,
-                    subject:'Account activation link',
-                    html:`<h2>Пожалуйста, нажмите по ссылке ниже,чтобы подтвердить регистрацию на нашем сайте</h2>
+                try{
+                    const token = jwt.sign({email,username,phone,password},config.get('secretKey'),{expiresIn:'2m'})
+                    const message = {
+                        from:'Mailer Test <mailertest48@mail.ru>',
+                        to:email,
+                        subject:'Account activation link',
+                        html:`<h2>Пожалуйста, нажмите по ссылке ниже,чтобы подтвердить регистрацию на нашем сайте</h2>
                           <a href="${config.get('client-url')}/verification/${token}">Нажмите</a>`
 
-                }
-                await transporter.sendMail(message, (err, info) => {
-                    if (err) {
-                        return res.send({message:'Error',err})
                     }
-                    return res.json({message:'Проверьте ваш почтовый ящик,чтобы подтвердить регистрацию',info})
-                })
+                    await transporter.sendMail(message, (err, info) => {
+                        if (err) {
+                            return res.send({message:'Error',err})
+                        }
+                        return res.json({message:'Проверьте ваш почтовый ящик,чтобы подтвердить регистрацию',info})
+                    })
+                }
+                catch(error){
+                    return res.json({message:"Произошла ошибка",error})
+                }
             }
      })
     }
@@ -83,16 +75,11 @@ router.post('/activation',async (req,res)=>{
             const decoded = jwt.verify(token,config.get('secretKey'))
             const {email,username,phone,password} = decoded
             const hashPassword = await bcrypt.hash(password,8)
-            const newUser = await new User({email,username,phone,password:hashPassword}).save()
-            await new ToDo({
-                title:'Example title',
-                description:'Example description',
-                user:newUser._id
-            }).save()
+            await new User({email,username,phone,password:hashPassword}).save()
             return res.json({message:'Поздравляем! Вы успешно заррегистрировались на нашем сайте'})
         }
         catch(e){
-            return res.json({message:'Неверный токен'})
+            return res.json({message:'Неверный токен,попробуйте заново зарегистрироваться'})
         }
     }
     else{
@@ -112,7 +99,7 @@ try{
     if(!checkPassword){
         return res.status(400).json({message:'Password is not correct'})
     }
-const token = jwt.sign({id:findUser._id}, config.get('secretKey'), {expiresIn: "1h"})
+const token = jwt.sign({id:findUser._id}, config.get('secretKey'), {expiresIn: "24h"})
     return res.json({
         token,
         user:{
@@ -123,8 +110,7 @@ const token = jwt.sign({id:findUser._id}, config.get('secretKey'), {expiresIn: "
         }
     })
 }catch(error){
-    console.log(error)
-    res.send({message: "Server error"})
+    return res.send({message: "Server error",error})
 }
 })
 
@@ -134,7 +120,7 @@ router.get('/auth',authMiddleware,
     async (req,res)=>{
 try{
     const findUser = await User.findOne({_id:req.user.id})
-    const token = jwt.sign({id:findUser._id},config.get('secretKey'),{expiresIn: '1h'})
+    const token = jwt.sign({id:findUser._id},config.get('secretKey'),{expiresIn: '24h'})
     return res.json({
         token,
         user:{
