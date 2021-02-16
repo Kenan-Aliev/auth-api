@@ -95,4 +95,22 @@ router.get('/getAll', async (req, res) => {
     }
 })
 
+router.get('/search', async (req, res) => {
+    try {
+        const {title} = req.query
+        let events = await Event.find({})
+        events = [...events.filter(el => el.title.includes(title))]
+        if (events.length === 0) {
+            return res.status(400).json({message: "По вашему запросу ничего не найдено!"})
+        }
+        return res.json({
+            events,
+            total: events.length
+        })
+    } catch (error) {
+        return res.status(400).json({error})
+    }
+
+})
+
 module.exports = router
