@@ -99,7 +99,7 @@ router.get('/search', async (req, res) => {
     try {
         const {title} = req.query
         let events = await Event.find({})
-        events = [...events.filter(el => el.title.includes(title))]
+        events = [...events.filter(el => el.title.toLowerCase().includes(title.toLowerCase()))]
         if (events.length === 0) {
             return res.status(400).json({message: "По вашему запросу ничего не найдено!"})
         }
