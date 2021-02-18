@@ -13,14 +13,14 @@ router.post('/registration',
     [
         check('email', 'Uncorrect email').isEmail(),
         check('username', 'Uncorrect username').isString().isLength({min: 3, max: 10}),
-        check('phone', 'Uncorrect phone').isString().isLength({min: 3, max: 15}),
+        check('phone', 'Uncorrect phone').isString().isLength({min: 3, max: 20}),
         check('password', 'Password must be longer than 3 and shorter than 12').isLength({min: 3, max: 12})
     ],
     async (req, res) => {
         try {
-            const errors = validationResult(req)
-            if (!errors.isEmpty()) {
-                return res.status(400).json({message: 'Uncorrect request', errors})
+            const error = validationResult(req)
+            if (!error.isEmpty()) {
+                return res.status(400).json({message: 'Ошибка при заполнении формы регистрации', error})
             }
             const {email, username, phone, password} = req.body
             User.findOne({
@@ -31,13 +31,11 @@ router.post('/registration',
                 }]
             }).then(async user => {
                 if (user) {
-                    let errors = {};
                     if (user.email === email) {
-                        errors.email = "Email already exists";
+                        return res.status(400).json({message:"Пользователь с таким имейлом уже существует"});
                     } else {
-                        errors.username = "User Name already exists";
+                        return res.status(400).json({message:"Пользователь с таким именем уже существует"});
                     }
-                    return res.status(400).json(errors);
                 } else {
                     try {
                         const token = jwt.sign({
@@ -54,9 +52,9 @@ router.post('/registration',
                           <a href="${config.get('client-url')}/verification/${token}">Нажмите</a>`
 
                         }
-                        await transporter.sendMail(message, (err, info) => {
-                            if (err) {
-                                return res.status(400).send({message: 'Error', err})
+                        await transporter.sendMail(message, (error, info) => {
+                            if (error) {
+                                return res.status(400).send({message: 'По непонятным причинам сообщение не удалось отправить на вашу почту', error})
                             }
                             return res.json({
                                 message: 'Проверьте ваш почтовый ящик,чтобы подтвердить регистрацию',
@@ -83,10 +81,10 @@ router.post('/activation', async (req, res) => {
             await new User({email, username, phone, password: hashPassword}).save()
             return res.json({message: 'Поздравляем! Вы успешно заррегистрировались на нашем сайте'})
         } catch (e) {
-            return res.json({message: 'Неверный токен,попробуйте заново зарегистрироваться'})
+            return res.status(400).json({message: 'Неверный токен,попробуйте заново зарегистрироваться'})
         }
     } else {
-        return res.json({message: 'Что то пошло не так'})
+        return res.status(400).json({message: 'Что то пошло не так'})
     }
 })
 
@@ -113,7 +111,7 @@ router.post('/login', async (req, res) => {
             }
         })
     } catch (error) {
-        return res.send({message: "Server error", error})
+        return res.status(400).send({message: "Server error", error})
     }
 })
 
