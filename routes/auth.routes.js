@@ -7,7 +7,7 @@ const { check, validationResult } = require('express-validator')
 const User = require('../models/userModel')
 const authMiddleware = require('../middlewares/auth.middleware')
 const transporter = require('../mailer/nodeMailer')
-
+const Event = require('../models/eventsModel')
 
 
 router.post('/registration',
@@ -68,7 +68,7 @@ router.post('/registration',
                 }
             })
         } catch (error) {
-            return res.json({message: 'Server error', error})
+            return res.status(500).json({message: 'Server error', error})
         }
     })
 
@@ -100,6 +100,7 @@ router.post('/login', async (req, res) => {
 		if (!checkPassword) {
 			return res.status(400).json({message: 'Password is not correct'})
 		}
+		const events = await Event.find({user:findUser._id})
 		const token = jwt.sign({id: findUser._id}, config.get('secretKey'), {expiresIn: "24h"})
 		return res.json({
 			token,
@@ -107,38 +108,22 @@ router.post('/login', async (req, res) => {
 				id: findUser._id,
 				email: findUser.email,
 				username: findUser.username,
-				phone: findUser.phone
+				phone: findUser.phone,
+				events
 			}
 		})
 	} catch (error) {
-		return res.status(400).send({message: "Server error", error})
+		return res.status(500).send({message: "Server error", error})
 	}
 })
 
-router.get('/auth', authMiddleware, async (req, res) => {
-	try {
-		const findUser = await User.findOne({ _id: req.user.id })
-		const token = jwt.sign({ id: findUser._id }, config.get('secretKey'), { expiresIn: '24h' })
-		return res.json({
-			token,
-			user: {
-				id: findUser._id,
-				email: findUser.email,
-				username: findUser.username,
-				phone: findUser.phone
-			}
-		})
-	} catch (error) {
-		return res.json({ message: 'Server error', error })
-	}
-})
 
 router.delete('/deleteUser', authMiddleware, async (req, res) => {
 	try {
 		await User.findOneAndDelete({ _id: req.user.id })
 		return res.json({ message: 'User was deleted' })
 	} catch (error) {
-		return res.json({ message: 'Server error', error })
+		return res.status(500).json({ message: 'Server error', error })
 	}
 })
 

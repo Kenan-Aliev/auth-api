@@ -2,6 +2,9 @@ const express = require('express')
 const router = new express()
 const User = require('../models/userModel')
 const Event = require('../models/eventsModel')
+const authMiddleware = require('../middlewares/auth.middleware')
+const jwt = require('jsonwebtoken')
+const config = require('config')
 
 router.get('/:userId', async (req, res) => {
     try {
@@ -18,11 +21,29 @@ router.get('/:userId', async (req, res) => {
             total: events.length
         })
     } catch (error) {
-        return res.json({message: "Server error", error})
+        return res.status(500).json({message: "Server error", error})
     }
 
 
 })
 
+
+router.get('/', authMiddleware, async (req, res) => {
+  try{
+      const user = await User.findOne({_id:req.user.id})
+      const events = await Event.find({user:req.user.id})
+      const token = jwt.sign({id:user._id},config.get('secretKey'),{expiresIn:'24h'})
+      return res.json({
+          token,
+          email:user.email,
+          username:user.username,
+          phone:user.phone,
+          events
+      })
+  }catch(error){
+      return res.status(500).json({message:"Server Error",error})
+  }
+
+})
 
 module.exports = router

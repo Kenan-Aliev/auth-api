@@ -13,7 +13,7 @@ router.post('/addCity', async (req, res) => {
         }
 
     } catch (error) {
-        return res.json({message: "Что то пошло не так", error})
+        return res.status(500).json({message: "Что то пошло не так", error})
     }
 
 })
@@ -23,7 +23,7 @@ router.get('/getCities', async (req, res) => {
         const cities = await City.find({})
         return res.json({cities})
     } catch (error) {
-        return res.json({message: "Server error", error})
+        return res.status(500).json({message: "Server error", error})
     }
 
 })

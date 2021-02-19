@@ -19,7 +19,7 @@ router.post('/post', authMiddleware,
             }).save()
             return res.json(addEvent)
         } catch (error) {
-            return res.json({message: 'Server error', error})
+            return res.status(500).json({message: 'Server error', error})
         }
 
     })
@@ -35,7 +35,7 @@ router.delete('/delete/:id', authMiddleware,
             await Event.deleteOne(findEvent)
             return res.json({message: 'Event was deleted', events: await Event.find({user: req.user.id})})
         } catch (error) {
-            return res.json({message: 'Server error', error})
+            return res.status(500).json({message: 'Server error', error})
         }
 
     })
@@ -49,7 +49,7 @@ router.get('/getUsersEvents', authMiddleware,
                 total: getEvents.length
             })
         } catch (error) {
-            return res.json({messagea: 'Server error', error})
+            return res.status(500).json({message: 'Server error', error})
         }
     })
 
@@ -63,7 +63,7 @@ router.get('/getByTypeName/:typeName', async (req, res) => {
         })
 
     } catch (error) {
-        return res.json({message: 'Error', error})
+        return res.status(500).json({message: 'Server error', error})
     }
 
 })
