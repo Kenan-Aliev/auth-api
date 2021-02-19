@@ -8,8 +8,9 @@ const eventsSchema = new Schema({
     city: {type: String, required: true},
     type: {type: String, required: true},
     date: {type: String, required: true},
-    address: {type: String, required: true}
-
+    address: {type: String, required: true},
+    views:{type:Number,default:0},
+    likes:{type:Number,default:0}
 })
 
 

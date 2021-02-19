@@ -113,4 +113,25 @@ router.get('/search', async (req, res) => {
 
 })
 
+
+router.get('/getMoreInfo/:eventId', async (req, res) => {
+    try {
+        const {eventId} = req.params
+        let event = await Event.findOne({_id:eventId})
+        if(!event){
+            return res.status(400).json({message:"Ивент не был найден"})
+        }
+        event.views++
+        await event.save()
+        return res.json({
+            event
+        })
+
+    }catch(error){
+        return res.status(500).json({message:"Server error"})
+    }
+})
+
+
+
 module.exports = router
