@@ -6,7 +6,7 @@ const authMiddleware = require('../middlewares/auth.middleware')
 router.post('/post', authMiddleware,
     async (req, res) => {
         try {
-            const {title, description, phone, city, type, date, address} = req.body
+            const {title, description, phone, city, type, date, address,photos,email} = req.body
             const addEvent = await new Event({
                 title,
                 description,
@@ -14,7 +14,9 @@ router.post('/post', authMiddleware,
                 city,
                 type,
                 date,
+                photos,
                 address,
+                userEmail:email,
                 user: req.user.id
             }).save()
             return res.json(addEvent)
@@ -78,7 +80,7 @@ router.get('/getByCityName/:cityName', async (req, res) => {
             total: events.length
         })
     } catch (error) {
-        return res.json({message: "Server error", error})
+        return res.status(500).json({message: "Server error", error})
     }
 })
 
@@ -91,7 +93,7 @@ router.get('/getAll', async (req, res) => {
             total: events.length
         })
     } catch (error) {
-        return res.json({message: "Server error", error})
+        return res.status(500).json({message: "Server error", error})
     }
 })
 
@@ -108,7 +110,7 @@ router.get('/search', async (req, res) => {
             total: events.length
         })
     } catch (error) {
-        return res.status(400).json({error})
+        return res.status(500).json({message:'Server error',error})
     }
 
 })

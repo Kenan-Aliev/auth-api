@@ -9,8 +9,18 @@ const eventRouter = require('./routes/events.routes')
 const typeRouter = require('./routes/type.routes')
 const cityRouter = require("./routes/city.routes")
 const userInfoRouter = require('./info/userInfo')
+const passport = require('passport')
+const cookieSession = require('cookie-session')
+const googleAuth = require('./googleAuth/googleAuth')
 
+server.use(cookieSession({
+    name: 'eventmaker',
+    keys: ['adilet', 'kenan'],
+    maxAge: 24 * 60 * 60 * 1000
+}))
 
+server.use(passport.initialize())
+server.use(passport.session())
 server.use(corsMiddleware)
 server.use(express.json())
 server.use('/api/auth', authRouter)
@@ -18,6 +28,7 @@ server.use('/api/events', eventRouter)
 server.use('/api/types', typeRouter)
 server.use('/api/cities', cityRouter)
 server.use('/api/info', userInfoRouter)
+server.use('/google', googleAuth)
 
 const start = async () => {
     try {

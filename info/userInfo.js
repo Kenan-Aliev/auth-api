@@ -27,22 +27,33 @@ router.get('/:userId', async (req, res) => {
 
 })
 
+router.get('/getAllUsers', async (req, res) => {
+    try {
+        const users = await User.find({})
+        return res.json({
+            users,
+            total: users.length
+        })
+    } catch (e) {
+        return res.status(500).json({message: "Server error"})
+    }
+
+})
+
 
 router.get('/', authMiddleware, async (req, res) => {
-  try{
-      const user = await User.findOne({_id:req.user.id})
-      const events = await Event.find({user:req.user.id})
-      const token = jwt.sign({id:user._id},config.get('secretKey'),{expiresIn:'24h'})
-      return res.json({
-          token,
-          email:user.email,
-          username:user.username,
-          phone:user.phone,
-          events
-      })
-  }catch(error){
-      return res.status(500).json({message:"Server Error",error})
-  }
+    try {
+        const user = await User.findOne({_id: req.user.id})
+        const events = await Event.find({user: req.user.id})
+        return res.json({
+            email: user.email,
+            username: user.username,
+            phone: user.phone,
+            events
+        })
+    } catch (error) {
+        return res.status(500).json({message: "Server Error", error})
+    }
 
 })
 
