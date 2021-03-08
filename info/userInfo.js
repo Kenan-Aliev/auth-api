@@ -6,7 +6,7 @@ const authMiddleware = require('../middlewares/auth.middleware')
 const jwt = require('jsonwebtoken')
 const config = require('config')
 
-router.get('/:userId', async (req, res) => {
+router.get('/getUser/:userId', async (req, res) => {
     try {
         const {userId} = req.params
         const user = await User.findOne({_id: userId})

@@ -19,7 +19,7 @@ router.post('/post', authMiddleware,
                 userEmail:email,
                 user: req.user.id
             }).save()
-            return res.json(addEvent)
+            return res.json({events:await Event.find({})})
         } catch (error) {
             return res.status(500).json({message: 'Server error', error})
         }
