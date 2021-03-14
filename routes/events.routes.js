@@ -6,8 +6,8 @@ const authMiddleware = require('../middlewares/auth.middleware')
 router.post('/post', authMiddleware,
     async (req, res) => {
         try {
-            const {title, description, phone, city, type, date, address,photos,email} = req.body
-            const addEvent = await new Event({
+            const {title, description, phone, city, type, date, address, photos, email} = req.body
+            await new Event({
                 title,
                 description,
                 phone,
@@ -16,10 +16,10 @@ router.post('/post', authMiddleware,
                 date,
                 photos,
                 address,
-                userEmail:email,
+                userEmail: email,
                 user: req.user.id
             }).save()
-            return res.json({events:await Event.find({})})
+            return res.json({events: await Event.find({})})
         } catch (error) {
             return res.status(500).json({message: 'Server error', error})
         }
@@ -35,7 +35,11 @@ router.delete('/delete/:id', authMiddleware,
                 return res.status(400).json({message: 'Event was not found'})
             }
             await Event.deleteOne(findEvent)
-            return res.json({message: 'Event was deleted', events: await Event.find({user: req.user.id})})
+            return res.json({
+                message: 'Event was deleted',
+                userEvents: await Event.find({user: req.user.id}),
+                allEvents: await Event.find({})
+            })
         } catch (error) {
             return res.status(500).json({message: 'Server error', error})
         }
@@ -110,7 +114,7 @@ router.get('/search', async (req, res) => {
             total: events.length
         })
     } catch (error) {
-        return res.status(500).json({message:'Server error',error})
+        return res.status(500).json({message: 'Server error', error})
     }
 
 })
@@ -119,9 +123,9 @@ router.get('/search', async (req, res) => {
 router.get('/getMoreInfo/:eventId', async (req, res) => {
     try {
         const {eventId} = req.params
-        let event = await Event.findOne({_id:eventId})
-        if(!event){
-            return res.status(400).json({message:"Ивент не был найден"})
+        let event = await Event.findOne({_id: eventId})
+        if (!event) {
+            return res.status(400).json({message: "Ивент не был найден"})
         }
         event.views++
         await event.save()
@@ -129,11 +133,10 @@ router.get('/getMoreInfo/:eventId', async (req, res) => {
             event
         })
 
-    }catch(error){
-        return res.status(500).json({message:"Server error"})
+    } catch (error) {
+        return res.status(500).json({message: "Server error"})
     }
 })
-
 
 
 module.exports = router
