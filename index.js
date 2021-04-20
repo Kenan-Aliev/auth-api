@@ -12,17 +12,20 @@ const userInfoRouter = require('./info/userInfo')
 const passport = require('passport')
 const cookieSession = require('cookie-session')
 const googleAuth = require('./googleAuth/googleAuth')
+const bodyParser = require('body-parser')
 
 server.use(cookieSession({
     name: 'eventmaker',
-    keys: ['adilet', 'kenan'],
+    keys: ['event', 'maker'],
     maxAge: 24 * 60 * 60 * 1000
 }))
-
+server.use(bodyParser.json({limit: '50mb'}));
+server.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 server.use(passport.initialize())
 server.use(passport.session())
 server.use(corsMiddleware)
-server.use(express.json())
+
+
 server.use('/api/auth', authRouter)
 server.use('/api/events', eventRouter)
 server.use('/api/types', typeRouter)
@@ -34,7 +37,8 @@ const start = async () => {
     try {
         await mongoose.connect(config.get("dbUrl"), {
             useNewUrlParser: true,
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
+            useFindAndModify:false
         })
 
         server.listen(PORT, () => {

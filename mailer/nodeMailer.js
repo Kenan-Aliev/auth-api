@@ -5,10 +5,10 @@ module.exports = nodemailer.createTransport({
         port: 465,
         secure: true, // true for 465, false for other ports
         auth: {
-            user: 'mailertest48@mail.ru',
-            pass: 'Nodemailer'
+            user: 'eventmaker_48@mail.ru',
+            pass: 'kenan484837'
         }
     }, {
-        from: 'Mailer Test <mailertest48@mail.ru>'
+        from: 'Event Maker <eventmaker_48@mail.ru>'
     }
 );

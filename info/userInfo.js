@@ -40,6 +40,22 @@ router.get('/getAllUsers', async (req, res) => {
 
 })
 
+router.put('/update', authMiddleware, async (req, res) => {
+    try{
+        const {name,phone,site} = req.body
+        await User.findOneAndUpdate({_id:req.user.id},{name,phone,site})
+        const userInfo = await User.findOne({_id:req.user.id})
+        return res.status(200).json({
+            name:userInfo.name,
+            phone:userInfo.phone,
+            site:userInfo.site,
+            message:"Информация о пользователе успешно обновлена"
+        })
+    }
+   catch(error){
+        return res.status(500).json({message:"Server error",error})
+   }
+})
 
 router.get('/', authMiddleware, async (req, res) => {
     try {
@@ -49,6 +65,8 @@ router.get('/', authMiddleware, async (req, res) => {
             email: user.email,
             username: user.username,
             phone: user.phone,
+            site:user.site,
+            name:user.name,
             events
         })
     } catch (error) {
