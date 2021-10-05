@@ -15,7 +15,7 @@ router.post('/registration',
         check('email', 'Uncorrect email').isEmail(),
         check('username', 'Uncorrect username').isString().isLength({min: 3}),
         check('phone', 'Uncorrect phone').isString().isLength({min: 3, max: 20}),
-        check('password', 'Password must be longer than 3 and shorter than 12').isLength({min: 9})
+        check('password', 'Password must be longer than 9').isLength({min: 9})
     ],
     async (req, res) => {
         try {
