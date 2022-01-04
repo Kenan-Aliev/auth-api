@@ -8,6 +8,7 @@ const User = require('../models/userModel')
 const authMiddleware = require('../middlewares/auth.middleware')
 const transporter = require('../mailer/nodeMailer')
 const Event = require('../models/eventsModel')
+const keys = require('../keys/index')
 
 
 router.post('/registration',
@@ -44,13 +45,13 @@ router.post('/registration',
                             username,
                             phone,
                             password
-                        }, config.get('secretKey'), {expiresIn: '2m'})
+                        }, keys.secretKey, {expiresIn: '2m'})
                         const message = {
                             from: 'Event Maker <eventmaker_48@mail.ru>',
                             to: email,
                             subject: 'Account activation link',
                             html: `<h2>Пожалуйста, нажмите по ссылке ниже,чтобы подтвердить регистрацию на нашем сайте</h2>
-                          <a href="${config.get('client-url')}/verification/${token}">Нажмите</a>`
+                          <a href="${keys.client_url}/verification/${token}">Нажмите</a>`
 
                         }
                         await transporter.sendMail(message, (error, info) => {
@@ -79,7 +80,7 @@ router.post('/activation', async (req, res) => {
     const {token} = req.body
     if (token) {
         try {
-            const decoded = jwt.verify(token, config.get('secretKey'))
+            const decoded = jwt.verify(token, keys.secretKey)
             const {email, username, phone, password} = decoded
             const hashPassword = await bcrypt.hash(password, 8)
             await new User({email, username, phone, password: hashPassword}).save()
@@ -104,7 +105,7 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({message: 'Password is not correct'})
         }
         const events = await Event.find({user: findUser._id})
-        const token = jwt.sign({id: findUser._id}, config.get('secretKey'), {expiresIn: "24h"})
+        const token = jwt.sign({id: findUser._id}, keys.secretKey, {expiresIn: "24h"})
         return res.json({
             token,
             user: {

@@ -13,6 +13,8 @@ const passport = require('passport')
 const cookieSession = require('cookie-session')
 const googleAuth = require('./googleAuth/googleAuth')
 const bodyParser = require('body-parser')
+require('dotenv').config()
+const keys = require('./keys/index')
 
 server.use(cookieSession({
     name: 'eventmaker',
@@ -33,16 +35,18 @@ server.use('/api/cities', cityRouter)
 server.use('/api/info', userInfoRouter)
 server.use('/google', googleAuth)
 
+
+
 const start = async () => {
     try {
-        await mongoose.connect(config.get("dbUrl"), {
+        await mongoose.connect(keys.dbUrl, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             useFindAndModify:false
         })
 
-        server.listen(PORT, () => {
-            console.log('Server started on port', PORT)
+        server.listen(keys.serverPort, () => {
+            console.log('Server started on port', keys.serverPort)
         })
     } catch (e) {
         console.log(e)

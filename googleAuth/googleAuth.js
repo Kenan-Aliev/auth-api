@@ -3,8 +3,8 @@ require('./passport-setup')
 const express = require('express')
 const router = new express()
 const jwt = require('jsonwebtoken')
-const config = require('config')
 const User = require('../models/userModel')
+const keys = require('../keys/index')
 
 router.get('/auth', passport.authenticate('google', {scope: ['profile', 'email']}))
 
@@ -14,7 +14,7 @@ router.get('/failed', (req, res) => {
 
 router.get('/successAuth', passport.authenticate('google', {failureRedirect: '/failed'}),
     (req, res) => {
-        const token = jwt.sign({id: req.user._id}, config.get('secretKey'), {expiresIn: '1m'})
+        const token = jwt.sign({id: req.user._id}, keys.secretKey, {expiresIn: '1m'})
         res.redirect('http://localhost:3000/google/auth/' + token)
     }
 )
@@ -22,12 +22,12 @@ router.get('/successAuth', passport.authenticate('google', {failureRedirect: '/f
 router.post('/token/checkout',async (req,res)=>{
     try {
         const {token} = req.body
-        const decode = jwt.verify(token, config.get('secretKey'))
+        const decode = jwt.verify(token, keys.secretKey)
         if(!decode){
             return res.status(400).json({message:'Неверный токен'})
         }
         const user = await User.findOne({_id:decode.id})
-        const newToken = jwt.sign({id:user._id},config.get('secretKey'),{expiresIn:'24h'})
+        const newToken = jwt.sign({id:user._id},keys.secretKey,{expiresIn:'24h'})
         return res.json({
             message:"ОК",
             newToken
