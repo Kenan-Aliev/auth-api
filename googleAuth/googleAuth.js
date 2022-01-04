@@ -9,32 +9,31 @@ const keys = require('../keys/index')
 router.get('/auth', passport.authenticate('google', {scope: ['profile', 'email']}))
 
 router.get('/failed', (req, res) => {
-    res.redirect('http://localhost:3000?auth=error')
+    res.redirect(`${keys.client_url}?auth=error`)
 })
 
 router.get('/successAuth', passport.authenticate('google', {failureRedirect: '/failed'}),
     (req, res) => {
         const token = jwt.sign({id: req.user._id}, keys.secretKey, {expiresIn: '1m'})
-        res.redirect('http://localhost:3000/google/auth/' + token)
+        res.redirect(`${keys.client_url}/google/auth/` + token)
     }
 )
 
-router.post('/token/checkout',async (req,res)=>{
+router.post('/token/checkout', async (req, res) => {
     try {
         const {token} = req.body
         const decode = jwt.verify(token, keys.secretKey)
-        if(!decode){
-            return res.status(400).json({message:'Неверный токен'})
+        if (!decode) {
+            return res.status(400).json({message: 'Неверный токен'})
         }
-        const user = await User.findOne({_id:decode.id})
-        const newToken = jwt.sign({id:user._id},keys.secretKey,{expiresIn:'24h'})
+        const user = await User.findOne({_id: decode.id})
+        const newToken = jwt.sign({id: user._id}, keys.secretKey, {expiresIn: '24h'})
         return res.json({
-            message:"ОК",
+            message: "ОК",
             newToken
         })
-    }
-        catch(error){
-    return res.status(500).json({message:'Server error',error})
+    } catch (error) {
+        return res.status(500).json({message: 'Server error', error})
     }
 
 })
@@ -42,6 +41,6 @@ router.post('/token/checkout',async (req,res)=>{
 router.get('/logout', (req, res) => {
     req.session = null;
     req.logout();
-    res.redirect('http://localhost:3000/auth')
+    res.redirect(`${keys.client_url}/auth`)
 })
 module.exports = router
